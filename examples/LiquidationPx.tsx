@@ -1,5 +1,5 @@
-// This snippet shows a function that can be used to compute the 
-// cross liquidation price given order inputs and market data.
+// This snippet shows a function that can be used to compute the
+// cross or isolated liquidation price given order inputs and market data.
 
 enum Side {
   Bid,
@@ -129,6 +129,75 @@ function coinPosition(
   return undefined;
 }
 
+function getIsolatedLiquidationPrice(
+  mid: number,
+  floatSide: number,
+  leverage: IsolatedLeverage,
+  positionSzi: number,
+  userSz: number,
+  totalNtlPos: number,
+  updatedPosition: number,
+  maxLeverage: number
+): number | null {
+  let userSzi = floatSide * userSz;
+  let rawUsd = leverage.rawUsd;
+  {
+    const isTradeLong = userSzi > 0;
+    const isPosLong = positionSzi > 0;
+    const isOffsetting = isTradeLong !== isPosLong;
+    if (positionSzi !== 0 && isOffsetting) {
+      const decreaseSz = Math.min(Math.abs(userSzi), Math.abs(positionSzi));
+      const decreaseSzi = userSzi < 0 ? -decreaseSz : decreaseSz;
+      const originalPosAbs = Math.abs(positionSzi);
+      const ntli = mid * positionSzi;
+      const adjustment = (rawUsd + ntli) * (decreaseSz / originalPosAbs);
+
+      rawUsd -= adjustment;
+
+      userSzi -= decreaseSzi;
+      positionSzi += decreaseSzi;
+      rawUsd -= mid * decreaseSzi;
+    }
+  }
+
+  {
+    const isTradeLong = userSzi > 0;
+    const isPosLong = positionSzi > 0;
+    const isIncreasingPos = isTradeLong === isPosLong;
+    if (positionSzi === 0 || isIncreasingPos) {
+      const ntl = Math.abs(mid * userSzi);
+      const margin = ntl / leverage.value;
+      rawUsd += margin;
+      positionSzi += userSzi;
+      rawUsd -= mid * userSzi;
+    }
+  }
+
+  if (positionSzi === 0) {
+    rawUsd = 0;
+  }
+  const ntli = updatedPosition * mid;
+  const accountValue = ntli + rawUsd;
+  const updatedPosSideFloat = updatedPosition > 0 ? 1.0 : -1.0;
+  const correction = 1 - floatSide / maxToMaintenanceLeverage(maxLeverage);
+  const liquidationPrice =
+    mid -
+    (updatedPosSideFloat *
+      (accountValue - totalNtlPos / maxToMaintenanceLeverage(maxLeverage))) /
+      Math.abs(updatedPosition) /
+      correction;
+
+  if (
+    liquidationPrice <= 0 ||
+    liquidationPrice > 1e15 ||
+    updatedPosition === 0
+  ) {
+    return null;
+  } else {
+    return liquidationPrice;
+  }
+}
+
 function getCrossLiquidationPrice(
   markPx: number,
   floatSide: number,
@@ -160,7 +229,7 @@ function maxToMaintenanceLeverage(maxLeverage: number): number {
 async function estimatedLiqPxAndExplanationExample(
   address: string,
   mid: number,
-  leverage: number,
+  leverage: Leverage,
   userSz: number,
   userLimitPx: number,
   isBuyOrder: boolean,
@@ -224,14 +293,29 @@ async function estimatedLiqPxAndExplanationExample(
   const totalNtlPos = userLimitPx * absUpdatedPosition;
   const { floatSide: positionSide } = parseSide(updatedPosition > 0);
 
-  const liqPx = getCrossLiquidationPrice(
-    markPx,
-    positionSide,
-    Math.max(crossMaintenanceMarginRemaining, totalNtlPos / leverage),
-    totalNtlPos,
-    absUpdatedPosition,
-    maxLeverage
-  );
+  const liqPx =
+    leverage.type === "isolated"
+      ? getIsolatedLiquidationPrice(
+          markPx,
+          floatSide,
+          leverage as IsolatedLeverage,
+          szi,
+          userSz,
+          totalNtlPos,
+          updatedPosition,
+          maxLeverage
+        )
+      : getCrossLiquidationPrice(
+          markPx,
+          positionSide,
+          Math.max(
+            crossMaintenanceMarginRemaining,
+            totalNtlPos / leverage.value
+          ),
+          totalNtlPos,
+          absUpdatedPosition,
+          maxLeverage
+        );
 
   console.log("liquidation px:", liqPx);
 }
