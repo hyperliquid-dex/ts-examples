@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import {OrderRequest, orderRequestToOrderWire, orderWiresToOrderAction, signL1Action} from "./signing";
 import axios from "axios";
 
-const wallet = new ethers.Wallet("your-secret-key");
+const wallet = new ethers.Wallet("974aa10c283cb55de27946376992df74666bf232abaca36a8d57c226081abaa7");
 
 const orderRequest: OrderRequest = {
     coin: "BTC",

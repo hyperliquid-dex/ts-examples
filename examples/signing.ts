@@ -142,7 +142,7 @@ export function addressToBytes(address: string): Buffer {
 }
 
 export function actionHash(action: any, vaultAddress: string | null, nonce: number): Buffer {
-    const nonceBytes = nonceToBytes(nonce); // 8바이트 Big-Endian으로 변환
+    const nonceBytes = nonceToBytes(nonce);
 
     const data = Buffer.concat([
         Buffer.from(encode(action)),
@@ -181,7 +181,6 @@ export async function signL1Action(
     const hash = actionHash(action, activePool, nonce);
     const phantomAgent = constructPhantomAgent(hash, isMainnet);
 
-    // 타입 정의 방식 변경
     const domain = {
         name: 'Exchange',
         version: '1',
@@ -195,8 +194,6 @@ export async function signL1Action(
             {name: 'connectionId', type: 'bytes32'}
         ]
     };
-
-    // EIP712Domain 타입은 자동으로 처리되므로 제거
 
     const signature = await wallet.signTypedData(
         domain,
