@@ -1,4 +1,3 @@
-// signing.ts
 import { ethers } from 'ethers';
 import { keccak256 } from 'ethers'
 import { encode } from '@msgpack/msgpack';
