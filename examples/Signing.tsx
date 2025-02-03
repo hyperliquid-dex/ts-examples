@@ -21,7 +21,7 @@ const agentTypes = {
   ],
 } as const;
 
-async function signStandardL1Action(
+export async function signStandardL1Action(
   action: unknown,
   wallet: PrivateKeyAccount,
   vaultAddress: string | null,
