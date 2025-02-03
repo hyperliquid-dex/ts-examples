@@ -131,7 +131,7 @@ function orderWiresToOrderAction(orderWires: OrderWire[]) {
   return {
     type: "order",
     orders: orderWires,
-    grouping: "na" as const,
+    grouping: "na",
   };
 }
 
@@ -142,7 +142,7 @@ async function orderExample() {
     throw new Error("PRIVATE_KEY is not set. Please configure it.");
   }
   const wallet = privateKeyToAccount(PRIVATE_KEY);
-  const subaccount_address = null;
+  const vault_or_subaccount_address = null;
   const nonce = Date.now();
 
   const orderRequest: OrderRequest = {
@@ -161,7 +161,7 @@ async function orderExample() {
   const signature = await signStandardL1Action(
     orderAction,
     wallet,
-    subaccount_address,
+    vault_or_subaccount_address,
     nonce,
   );
 

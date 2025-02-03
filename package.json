@@ -1,0 +1,29 @@
+{
+  "name": "ts-examples",
+  "version": "1.0.0",
+  "description": "Sample scripts/snippets for computing various frontend values. Refer to [hyperliquid-ts-sdk](https://github.com/nomeida/hyperliquid) for a Typescript SDK written by a member of the community.",
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hyperliquid-dex/ts-examples.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hyperliquid-dex/ts-examples/issues"
+  },
+  "homepage": "https://github.com/hyperliquid-dex/ts-examples#readme",
+  "dependencies": {
+    "@msgpack/msgpack": "^3.0.0-beta3",
+    "axios": "^1.7.9",
+    "decimal.js": "^10.5.0",
+    "tsx": "^4.19.2",
+    "viem": "^2.22.17"
+  }
+}

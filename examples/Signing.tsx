@@ -28,7 +28,7 @@ export async function signStandardL1Action(
   nonce: number
 ): Promise<Signature> {
   const phantomAgent = {
-    source: IS_MAINNET ? "a" : "b", 
+    source: IS_MAINNET ? "a" : "b",
     connectionId: hashAction(
       action,
       vaultAddress,
